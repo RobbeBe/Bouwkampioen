@@ -1,0 +1,3 @@
+cd /Users/robbebeeckaert/bouwdemo
+
+node server.js

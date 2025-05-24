@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Product Info Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Pacifico&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+  :root {
+    --primary-color: #0a3d62;
+    --accent-color: #3a8dca;
+    --bg-light: #f4f7f9;
+    --bg-dark: #1d252c;
+    --text-light: #333;
+    --text-dark: #e6e6e6;
+    --button-bg: #0a3d62;
+    --button-hover: #095a8a;
+    --button-active: #073f63;
+  }
+  /* Achtergrond logo als watermark met externe URL */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 400px;
+    height: 400px;
+    background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRs8QZo_drXZyey006GCydAa76XdgoqndgSfw&s') no-repeat center center;
+    background-size: contain;
+    opacity: 0.07;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-light);
+    color: var(--text-light);
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    transition: all 0.4s ease;
+    position: relative;
+    z-index: 1;
+  }
+  body.dark-mode {
+    background: var(--bg-dark);
+    color: var(--text-dark);
+  }
+  h1 {
+    text-align: center;
+    font-weight: 700;
+    font-size: 2.2rem;
+    margin-bottom: 30px;
+    color: var(--primary-color);
+  }
+  body.dark-mode h1 {
+    color: #ffffff;
+  }
+  label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+  }
+  .input-group {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  input[type="text"] {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+  input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+  button {
+    background-color: var(--button-bg);
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    padding: 12px 24px;
+    font-size: 1rem;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(10, 61, 98, 0.2);
+    transition: all 0.3s ease;
+  }
+  button:hover {
+    background-color: var(--button-hover);
+  }
+  button:active {
+    background-color: var(--button-active);
+  }
+  #output {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 25px 30px;
+    margin-top: 20px;
+  }
+  body.dark-mode #output {
+    background: #2b3643;
+  }
+  #output p, #output ul {
+    margin: 8px 0;
+  }
+  #output img {
+    max-width: 240px;
+    margin-top: 15px;
+    border-radius: 8px;
+    display: block;
+  }
+  .error {
+    color: #e74c3c;
+    background: #fdecea;
+    padding: 10px 15px;
+    border-radius: 8px;
+  }
+  body.dark-mode .error {
+    background: #3c2c2c;
+  }
+  .copy-btn {
+    background: transparent;
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-left: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  .copy-btn:hover {
+    background: var(--primary-color);
+    color: #fff;
+  }
+  #modeToggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--bg-light);
+    color: var(--primary-color);
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    z-index: 10;
+  }
+  body.dark-mode #modeToggle {
+    background: var(--bg-dark);
+    color: #e6e6e6;
+  }
+  .loader {
+    border: 4px solid rgba(0,0,0,0.1);
+    border-top: 4px solid var(--primary-color);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+  }
+  @keyframes spin {
+    0% { transform: rotate(0deg);}
+    100% { transform: rotate(360deg);}
+  }
+  footer {
+    margin-top: 40px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+  .signature {
+    font-style: italic;
+    color: #555;
+    font-family: 'Pacifico', cursive;
+  }
+  body.dark-mode .signature {
+    color: #ccc;
+  }
+  @media (max-width: 600px) {
+    .input-group {
+      flex-direction: column;
+    }
+    input[type="text"], button {
+      width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+
+<button id="modeToggle" title="Dark/Light Mode Toggle">🌙</button>
+
+<h1>Product Info Generator</h1>
+
+<label for="urlInput">Product URL van concurrent:</label>
+<div class="input-group">
+  <input type="text" id="urlInput" placeholder="Plak hier de product URL" />
+  <button id="generateBtn">Genereer</button>
+</div>
+
+<button id="downloadPdfBtn">Download als PDF</button>
+
+<div id="output"></div>
+<div id="loaderContainer" style="display: none;"><div class="loader"></div></div>
+
+<footer>
+  <p class="signature">“Met vakmanschap door Bouwkampioen”</p>
+</footer>
+
+<script>
+const modeToggle = document.getElementById('modeToggle');
+modeToggle.addEventListener('click', () => {
+  document.body.classList.toggle('dark-mode');
+  modeToggle.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+});
+
+document.getElementById('generateBtn').addEventListener('click', async () => {
+  const url = document.getElementById('urlInput').value.trim();
+  const output = document.getElementById('output');
+  const loaderContainer = document.getElementById('loaderContainer');
+  if (!url) {
+    output.innerHTML = '<p class="error">Gelieve eerst een URL in te voeren.</p>';
+    return;
+  }
+  output.innerHTML = '';
+  loaderContainer.style.display = 'block';
+
+  try {
+    const response = await fetch('http://localhost:3000/api/generate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ url }),
+    });
+
+    if (!response.ok) throw new Error(`Server returned status ${response.status}`);
+    const data = await response.json();
+
+    const sections = [
+      { label: 'Attribute Set', text: data.attributeSet },
+      { label: 'Product Name', text: data.productName },
+      { label: 'URL Handle', text: data.urlHandle },
+      { label: 'Prijs', text: `€${data.price}` },
+      { label: 'Kleur', text: data.color },
+      { label: 'SKU', text: data.sku },
+      { label: 'Unit Type', text: data.unitType },
+      { label: 'Search Terms', text: data.searchTerms.join(', ') },
+      { label: 'Merk', text: data.merk },
+      { label: 'Quantity', text: data.quantity },
+      { label: 'Categories', text: data.categories },
+      { label: 'Description', text: data.description },
+      { label: 'Technische Fiche', text: data.technischeFiche },
+      { label: 'Meta Title', text: data.metaTitle },
+      { label: 'Meta Description', text: data.metaDescription },
+    ];
+
+    let html = sections.map(sec => `<p><strong>${sec.label}:</strong> ${sec.text} <button class="copy-btn" data-text="${sec.text}">Copy</button></p>`).join('');
+    html += `<p><strong>Advantages:</strong></p><ul>${data.advantages.map(item => `<li>${item}</li>`).join('')}</ul>`;
+    html += `<p><strong>Thumbnail:</strong><br><a href="${data.thumbnail}" target="_blank">${data.thumbnail}</a><br><img src="${data.thumbnail}" alt="Productafbeelding" /></p>`;
+    html += `<p><strong>Klantreviews:</strong></p><ul>${data.reviews.map(r => `<li><strong>${r.name}:</strong> ${r.text}</li>`).join('')}</ul>`;
+
+    output.innerHTML = html;
+  } catch (err) {
+    output.innerHTML = `<p class="error">Er ging iets mis: ${err.message}</p>`;
+  } finally {
+    loaderContainer.style.display = 'none';
+  }
+});
+
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('copy-btn')) {
+    const text = e.target.getAttribute('data-text');
+    navigator.clipboard.writeText(text).then(() => {
+      e.target.textContent = 'Copied!';
+      setTimeout(() => e.target.textContent = 'Copy', 1000);
+    });
+  }
+});
+
+document.getElementById('downloadPdfBtn').addEventListener('click', () => {
+  const element = document.getElementById('output');
+  html2pdf().from(element).save('product-info.pdf');
+});
+</script>
+
+</body>
+</html>
