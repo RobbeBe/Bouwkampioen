@@ -4,12 +4,12 @@ import bodyParser from 'body-parser';
 import OpenAI from 'openai';
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;  // Gebruik Render's poort of 3000 lokaal
 
 app.use(cors());
 app.use(bodyParser.json());
 
-// Zet je API key hier rechtstreeks in de code (let op, niet veilig voor productie)
+// Zet je API key hier rechtstreeks in de code (niet veilig voor productie!)
 const openai = new OpenAI({
   apiKey: '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',
 });
@@ -44,8 +44,8 @@ De rest van de velden ook zoals in de specificaties hierboven. Geef duidelijke, 
 
     // Strip eventuele markdown backticks en 'json' tag eraf
     responseText = responseText.trim()
-      .replace(/^```json\s*/, '')   // Verwijder opening ```json
-      .replace(/```$/, '');          // Verwijder afsluitende ```
+      .replace(/^```json\s*/, '')
+      .replace(/```$/, '');
 
     console.log("Cleaned AI response text:", responseText);
 
@@ -83,6 +83,11 @@ De rest van de velden ook zoals in de specificaties hierboven. Geef duidelijke, 
   }
 });
 
+// Simpele root route om te checken of server draait
+app.get('/', (req, res) => {
+  res.send('Server is up and running!');
+});
+
 app.listen(port, () => {
-  console.log(`Server draait op http://localhost:${port}`);
+  console.log(`Server draait op poort ${port}`);
 });
